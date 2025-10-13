@@ -1,0 +1,3 @@
+D:/Projetos/C++/Hello_World_CMake/out/build/x64-debug/CMakeFiles/Hello_World_CMake.dir
+D:/Projetos/C++/Hello_World_CMake/out/build/x64-debug/CMakeFiles/edit_cache.dir
+D:/Projetos/C++/Hello_World_CMake/out/build/x64-debug/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xadrez vs IA</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .game-setup {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .color-selection {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .color-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .color-btn.white {
+            background: white;
+            color: #333;
+        }
+
+        .color-btn.black {
+            background: #333;
+            color: white;
+        }
+
+        .color-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .color-btn.selected {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .start-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .game-board {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            gap: 0;
+            margin: 0 auto;
+            border: 3px solid #8B4513;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .square.light {
+            background: #F0D9B5;
+        }
+
+        .square.dark {
+            background: #B58863;
+        }
+
+        .square.selected {
+            background: #7FB069 !important;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .square.possible-move {
+            background: #87CEEB !important;
+        }
+
+        .square.in-check {
+            background: #FF6B6B !important;
+        }
+
+        .square:hover {
+            opacity: 0.8;
+        }
+
+        .game-info {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .turn-indicator {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .status {
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .reset-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .reset-btn:hover {
+            background: #FF5252;
+        }
+
+        .thinking {
+            color: #FFD700;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>♔ Xadrez vs IA ♛</h1>
+        
+        <div class="game-setup" id="setup">
+            <h2>Escolha sua cor:</h2>
+            <div class="color-selection">
+                <button class="color-btn white" onclick="selectColor('white')">
+                    ♔ Brancas
+                </button>
+                <button class="color-btn black" onclick="selectColor('black')">
+                    ♚ Pretas
+                </button>
+            </div>
+            <button class="start-btn" onclick="startGame()" id="startBtn" style="display: none;">
+                Iniciar Jogo
+            </button>
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <div class="board" id="board"></div>
+            <div class="game-info">
+                <div class="turn-indicator" id="turnIndicator">Sua vez</div>
+                <div class="status" id="status">Jogo em andamento</div>
+                <button class="reset-btn" onclick="resetGame()">Novo Jogo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let playerColor = null;
+        let currentPlayer = 'white';
+        let selectedSquare = null;
+        let gameBoard = [];
+        let gameActive = true;
+
+        // Peças do xadrez em Unicode
+        const pieces = {
+            white: {
+                king: '♔', queen: '♕', rook: '♖', 
+                bishop: '♗', knight: '♘', pawn: '♙'
+            },
+            black: {
+                king: '♚', queen: '♛', rook: '♜', 
+                bishop: '♝', knight: '♞', pawn: '♟'
+            }
+        };
+
+        // Posição inicial do tabuleiro
+        const initialBoard = [
+            ['♜','♞','♝','♛','♚','♝','♞','♜'],
+            ['♟','♟','♟','♟','♟','♟','♟','♟'],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            ['♙','♙','♙','♙','♙','♙','♙','♙'],
+            ['♖','♘','♗','♕','♔','♗','♘','♖']
+        ];
+
+        function selectColor(color) {
+            playerColor = color;
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.color-btn.${color}`).classList.add('selected');
+            document.getElementById('startBtn').style.display = 'block';
+        }
+
+        function startGame() {
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('gameBoard').style.display = 'block';
+            initializeBoard();
+            
+            if (playerColor === 'black') {
+                currentPlayer = 'white';
+                setTimeout(() => makeAIMove(), 1000);
+            }
+        }
+
+        function initializeBoard() {
+    gameBoard = initialBoard.map(row => [...row]);
+    const boardElement = document.getElementById('board');
+    boardElement.innerHTML = '';
+
+    const rows = playerColor === 'white' ? [...Array(8).keys()] : [...Array(8).keys()].reverse();
+    const cols = playerColor === 'white' ? [...Array(8).keys()] : [...Array(8).keys()].reverse();
+
+    for (let row of rows) {
+        for (let col of cols) {
+            const square = document.createElement('div');
+            square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+            square.dataset.row = row;
+            square.dataset.col = col;
+            square.textContent = gameBoard[row][col] || '';
+            square.addEventListener('click', () => handleSquareClick(row, col));
+            boardElement.appendChild(square);
+        }
+    }
+    updateTurnIndicator();
+}
+
+        function handleSquareClick(row, col) {
+            if (!gameActive) return;
+            
+            const piece = gameBoard[row][col];
+            const isPlayerTurn = (currentPlayer === playerColor);
+            
+            if (!isPlayerTurn) return;
+
+            if (selectedSquare) {
+                if (selectedSquare.row === row && selectedSquare.col === col) {
+                    // Deselecionar
+                    clearSelection();
+                } else if (isValidMove(selectedSquare.row, selectedSquare.col, row, col)) {
+                    // Fazer jogada
+                    makeMove(selectedSquare.row, selectedSquare.col, row, col);
+                    clearSelection();
+                    
+                    if (gameActive) {
+                        currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+                        updateTurnIndicator();
+                        setTimeout(() => makeAIMove(), 500);
+                    }
+                } else {
+                    clearSelection();
+                    if (piece && isPieceColor(piece, playerColor)) {
+                        selectSquare(row, col);
+                    }
+                }
+            } else {
+                if (piece && isPieceColor(piece, playerColor)) {
+                    selectSquare(row, col);
+                }
+            }
+        }
+
+        function selectSquare(row, col) {
+            selectedSquare = { row, col };
+            document.querySelector(`[data-row="${row}"][data-col="${col}"]`).classList.add('selected');
+            highlightPossibleMoves(row, col);
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.square').forEach(square => {
+                square.classList.remove('selected', 'possible-move');
+            });
+            selectedSquare = null;
+        }
+
+        function highlightPossibleMoves(row, col) {
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (isValidMove(row, col, r, c)) {
+                        document.querySelector(`[data-row="${r}"][data-col="${c}"]`).classList.add('possible-move');
+                    }
+                }
+            }
+        }
+
+        function isPieceColor(piece, color) {
+            const whitePieces = '♔♕♖♗♘♙';
+            const blackPieces = '♚♛♜♝♞♟';
+            return color === 'white' ? whitePieces.includes(piece) : blackPieces.includes(piece);
+        }
+
+        function isValidMove(fromRow, fromCol, toRow, toCol) {
+            if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) return false;
+            
+            const piece = gameBoard[fromRow][fromCol];
+            const targetPiece = gameBoard[toRow][toCol];
+            
+            if (!piece) return false;
+            if (targetPiece && isPieceColor(piece, 'white') === isPieceColor(targetPiece, 'white')) return false;
+
+            const rowDiff = toRow - fromRow;
+            const colDiff = toCol - fromCol;
+
+            // Lógica simplificada de movimento das peças
+            switch (piece) {
+                case '♙': // Peão branco
+                    if (colDiff === 0 && !targetPiece) {
+                        return (rowDiff === -1) || (fromRow === 6 && rowDiff === -2);
+                    }
+                    return Math.abs(colDiff) === 1 && rowDiff === -1 && targetPiece;
+                
+                case '♟': // Peão preto
+                    if (colDiff === 0 && !targetPiece) {
+                        return (rowDiff === 1) || (fromRow === 1 && rowDiff === 2);
+                    }
+                    return Math.abs(colDiff) === 1 && rowDiff === 1 && targetPiece;
+                
+                case '♖': case '♜': // Torre
+                    return (rowDiff === 0 || colDiff === 0) && isPathClear(fromRow, fromCol, toRow, toCol);
+                
+                case '♗': case '♝': // Bispo
+                    return Math.abs(rowDiff) === Math.abs(colDiff) && isPathClear(fromRow, fromCol, toRow, toCol);
+                
+                case '♕': case '♛': // Rainha
+                    return (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) && 
+                           isPathClear(fromRow, fromCol, toRow, toCol);
+                
+                case '♘': case '♞': // Cavalo
+                    return (Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 1) || 
+                           (Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 2);
+                
+                case '♔': case '♚': // Rei
+                    return Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1;
+            }
+            return false;
+        }
+
+        function isPathClear(fromRow, fromCol, toRow, toCol) {
+            const rowStep = toRow > fromRow ? 1 : toRow < fromRow ? -1 : 0;
+            const colStep = toCol > fromCol ? 1 : toCol < fromCol ? -1 : 0;
+            
+            let currentRow = fromRow + rowStep;
+            let currentCol = fromCol + colStep;
+            
+            while (currentRow !== toRow || currentCol !== toCol) {
+                if (gameBoard[currentRow][currentCol]) return false;
+                currentRow += rowStep;
+                currentCol += colStep;
+            }
+            return true;
+        }
+
+        function makeMove(fromRow, fromCol, toRow, toCol) {
+            gameBoard[toRow][toCol] = gameBoard[fromRow][fromCol];
+            gameBoard[fromRow][fromCol] = null;
+            updateBoardDisplay();
+            checkGameEnd();
+        }
+
+        function updateBoardDisplay() {
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    square.textContent = gameBoard[row][col] || '';
+                }
+            }
+        }
+
+        function makeAIMove() {
+            if (!gameActive) return;
+            
+            document.getElementById('status').innerHTML = '<span class="thinking">IA pensando...</span>';
+            
+            setTimeout(() => {
+                const aiColor = playerColor === 'white' ? 'black' : 'white';
+                const bestMove = findBestMove(aiColor);
+                
+                if (bestMove) {
+                    makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol);
+                    currentPlayer = playerColor;
+                    updateTurnIndicator();
+                }
+            }, 1000);
+        }
+
+        function findBestMove(color) {
+            const moves = getAllPossibleMoves(color);
+            if (moves.length === 0) return null;
+
+            let bestMove = null;
+            let bestScore = color === 'white' ? -Infinity : Infinity;
+
+            for (const move of moves) {
+                // Simular jogada
+                const originalPiece = gameBoard[move.toRow][move.toCol];
+                gameBoard[move.toRow][move.toCol] = gameBoard[move.fromRow][move.fromCol];
+                gameBoard[move.fromRow][move.fromCol] = null;
+
+                // Avaliar posição após 2 jogadas
+                const score = minimax(2, color === 'white' ? false : true, -Infinity, Infinity);
+
+                // Desfazer jogada
+                gameBoard[move.fromRow][move.fromCol] = gameBoard[move.toRow][move.toCol];
+                gameBoard[move.toRow][move.toCol] = originalPiece;
+
+                if (color === 'white' ? score > bestScore : score < bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+
+            return bestMove;
+        }
+
+        function minimax(depth, isMaximizing, alpha, beta) {
+            if (depth === 0) {
+                return evaluateBoard();
+            }
+
+            const color = isMaximizing ? 'white' : 'black';
+            const moves = getAllPossibleMoves(color);
+
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (const move of moves) {
+                    const originalPiece = gameBoard[move.toRow][move.toCol];
+                    gameBoard[move.toRow][move.toCol] = gameBoard[move.fromRow][move.fromCol];
+                    gameBoard[move.fromRow][move.fromCol] = null;
+
+                    const eval = minimax(depth - 1, false, alpha, beta);
+
+                    gameBoard[move.fromRow][move.fromCol] = gameBoard[move.toRow][move.toCol];
+                    gameBoard[move.toRow][move.toCol] = originalPiece;
+
+                    maxEval = Math.max(maxEval, eval);
+                    alpha = Math.max(alpha, eval);
+                    if (beta <= alpha) break;
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (const move of moves) {
+                    const originalPiece = gameBoard[move.toRow][move.toCol];
+                    gameBoard[move.toRow][move.toCol] = gameBoard[move.fromRow][move.fromCol];
+                    gameBoard[move.fromRow][move.fromCol] = null;
+
+                    const eval = minimax(depth - 1, true, alpha, beta);
+
+                    gameBoard[move.fromRow][move.fromCol] = gameBoard[move.toRow][move.toCol];
+                    gameBoard[move.toRow][move.toCol] = originalPiece;
+
+                    minEval = Math.min(minEval, eval);
+                    beta = Math.min(beta, eval);
+                    if (beta <= alpha) break;
+                }
+                return minEval;
+            }
+        }
+
+        function getAllPossibleMoves(color) {
+            const moves = [];
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameBoard[row][col];
+                    if (piece && isPieceColor(piece, color)) {
+                        for (let toRow = 0; toRow < 8; toRow++) {
+                            for (let toCol = 0; toCol < 8; toCol++) {
+                                if (isValidMove(row, col, toRow, toCol)) {
+                                    moves.push({ fromRow: row, fromCol: col, toRow, toCol });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return moves;
+        }
+
+        function evaluateBoard() {
+            const pieceValues = {
+                '♙': 1, '♟': -1,
+                '♘': 3, '♞': -3,
+                '♗': 3, '♝': -3,
+                '♖': 5, '♜': -5,
+                '♕': 9, '♛': -9,
+                '♔': 100, '♚': -100
+            };
+
+            let score = 0;
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameBoard[row][col];
+                    if (piece) {
+                        score += pieceValues[piece] || 0;
+                    }
+                }
+            }
+            return score;
+        }
+
+        function checkGameEnd() {
+            // Verificação simplificada de fim de jogo
+            let whiteKing = false, blackKing = false;
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if (gameBoard[row][col] === '♔') whiteKing = true;
+                    if (gameBoard[row][col] === '♚') blackKing = true;
+                }
+            }
+
+            if (!whiteKing) {
+                gameActive = false;
+                document.getElementById('status').textContent = 'Pretas vencem!';
+            } else if (!blackKing) {
+                gameActive = false;
+                document.getElementById('status').textContent = 'Brancas vencem!';
+            } else {
+                document.getElementById('status').textContent = 'Jogo em andamento';
+            }
+        }
+
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turnIndicator');
+            if (currentPlayer === playerColor) {
+                indicator.textContent = 'Sua vez';
+                indicator.style.color = '#4CAF50';
+            } else {
+                indicator.textContent = 'Vez da IA';
+                indicator.style.color = '#FF9800';
+            }
+        }
+
+        function resetGame() {
+            gameActive = true;
+            currentPlayer = 'white';
+            selectedSquare = null;
+            document.getElementById('setup').style.display = 'block';
+            document.getElementById('gameBoard').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'none';
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            playerColor = null;
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98c7e266605da538',t:'MTc2MDExNzgzMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

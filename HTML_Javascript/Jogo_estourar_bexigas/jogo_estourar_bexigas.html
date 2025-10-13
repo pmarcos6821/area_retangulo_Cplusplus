@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoura Bexigas</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 100%);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+        }
+
+        .game-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .lives {
+            font-size: 20px;
+            color: #e74c3c;
+        }
+
+        .balloon {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            z-index: 100;
+        }
+
+        .balloon:hover {
+            transform: scale(1.1);
+        }
+
+        .balloon svg {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .game-over-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .game-over h2 {
+            color: #e74c3c;
+            font-size: 36px;
+            margin: 0 0 20px 0;
+        }
+
+        .final-score {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            background: #2980b9;
+        }
+
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .start-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .start-content h1 {
+            color: #2c3e50;
+            font-size: 42px;
+            margin: 0 0 20px 0;
+        }
+
+        .instructions {
+            color: #7f8c8d;
+            font-size: 18px;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+
+        .start-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .start-btn:hover {
+            background: #229954;
+        }
+
+        .pop-effect {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: #f39c12;
+            animation: popAnimation 0.6s ease-out forwards;
+        }
+
+        @keyframes popAnimation {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.5) translateY(-30px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="start-screen" id="startScreen">
+            <div class="start-content">
+                <h1>🎈 Estoura Bexigas 🎈</h1>
+                <div class="instructions">
+                    Clique nas bexigas para estourá-las!<br>
+                    Não deixe muitas bexigas acumularem na tela<br>
+                    ou você perderá o jogo!
+                </div>
+                <button class="start-btn" onclick="startGame()">Começar Jogo</button>
+            </div>
+        </div>
+
+        <div class="game-header">
+            <div class="score">Pontos: <span id="score">0</span></div>
+            <div class="lives">❤️ Vidas: <span id="lives">3</span></div>
+        </div>
+
+        <div class="game-over" id="gameOver">
+            <div class="game-over-content">
+                <h2>Game Over!</h2>
+                <div class="final-score">Pontuação Final: <span id="finalScore">0</span></div>
+                <button class="restart-btn" onclick="restartGame()">Jogar Novamente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            score: 0,
+            lives: 3,
+            balloons: [],
+            gameRunning: false,
+            spawnRate: 2000,
+            maxBalloons: 15,
+            balloonSpeed: 1
+        };
+
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f'];
+
+        function createBalloon() {
+            if (!gameState.gameRunning) return;
+
+            const balloon = {
+                id: Date.now() + Math.random(),
+                x: Math.random() * (window.innerWidth - 80),
+                y: window.innerHeight + 50,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: 60 + Math.random() * 40,
+                speed: gameState.balloonSpeed + Math.random() * 2
+            };
+
+            gameState.balloons.push(balloon);
+            renderBalloon(balloon);
+        }
+
+        function renderBalloon(balloon) {
+            const balloonElement = document.createElement('div');
+            balloonElement.className = 'balloon';
+            balloonElement.id = `balloon-${balloon.id}`;
+            balloonElement.style.left = balloon.x + 'px';
+            balloonElement.style.bottom = '0px';
+            
+            balloonElement.innerHTML = `
+                <svg width="${balloon.size}" height="${balloon.size * 1.2}" viewBox="0 0 100 120">
+                    <ellipse cx="50" cy="40" rx="35" ry="45" fill="${balloon.color}" stroke="#fff" stroke-width="2"/>
+                    <path d="M50 85 Q50 95 45 100 Q50 105 55 100 Q50 95 50 85" fill="#8b4513"/>
+                    <circle cx="45" cy="25" r="8" fill="rgba(255,255,255,0.3)"/>
+                </svg>
+            `;
+
+            balloonElement.addEventListener('click', () => popBalloon(balloon.id));
+            document.querySelector('.game-container').appendChild(balloonElement);
+        }
+
+        function popBalloon(balloonId) {
+            const balloonIndex = gameState.balloons.findIndex(b => b.id === balloonId);
+            if (balloonIndex === -1) return;
+
+            const balloon = gameState.balloons[balloonIndex];
+            const balloonElement = document.getElementById(`balloon-${balloonId}`);
+            
+            if (balloonElement) {
+                // Efeito visual de pontuação
+                const popEffect = document.createElement('div');
+                popEffect.className = 'pop-effect';
+                popEffect.textContent = '+10';
+                popEffect.style.left = balloon.x + balloon.size/2 + 'px';
+                popEffect.style.bottom = (window.innerHeight - balloon.y) + 'px';
+                document.querySelector('.game-container').appendChild(popEffect);
+
+                setTimeout(() => popEffect.remove(), 600);
+
+                balloonElement.remove();
+            }
+
+            gameState.balloons.splice(balloonIndex, 1);
+            gameState.score += 10;
+            updateScore();
+
+            // Aumenta dificuldade gradualmente
+            if (gameState.score % 100 === 0) {
+                gameState.spawnRate = Math.max(800, gameState.spawnRate - 100);
+                gameState.balloonSpeed += 0.2;
+            }
+        }
+
+        function updateBalloons() {
+            if (!gameState.gameRunning) return;
+
+            gameState.balloons.forEach((balloon, index) => {
+                balloon.y -= balloon.speed;
+                const balloonElement = document.getElementById(`balloon-${balloon.id}`);
+                
+                if (balloonElement) {
+                    balloonElement.style.bottom = (window.innerHeight - balloon.y) + 'px';
+                }
+
+                // Remove bexigas que saíram da tela
+                if (balloon.y < -balloon.size * 1.2) {
+                    if (balloonElement) balloonElement.remove();
+                    gameState.balloons.splice(index, 1);
+                }
+            });
+
+            // Verifica se há muitas bexigas na tela
+            if (gameState.balloons.length > gameState.maxBalloons) {
+                gameState.lives--;
+                updateLives();
+                
+                // Remove algumas bexigas para dar uma chance
+                const balloonsToRemove = gameState.balloons.splice(0, 5);
+                balloonsToRemove.forEach(balloon => {
+                    const element = document.getElementById(`balloon-${balloon.id}`);
+                    if (element) element.remove();
+                });
+
+                if (gameState.lives <= 0) {
+                    endGame();
+                    return;
+                }
+            }
+
+            requestAnimationFrame(updateBalloons);
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = gameState.score;
+        }
+
+        function updateLives() {
+            document.getElementById('lives').textContent = gameState.lives;
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            gameState.gameRunning = true;
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.balloons = [];
+            gameState.spawnRate = 2000;
+            gameState.balloonSpeed = 1;
+            
+            updateScore();
+            updateLives();
+            
+            // Inicia o loop de criação de bexigas
+            const spawnInterval = setInterval(() => {
+                if (!gameState.gameRunning) {
+                    clearInterval(spawnInterval);
+                    return;
+                }
+                createBalloon();
+            }, gameState.spawnRate);
+
+            // Inicia o loop de atualização
+            updateBalloons();
+
+            // Ajusta a taxa de spawn dinamicamente
+            const adjustSpawn = setInterval(() => {
+                if (!gameState.gameRunning) {
+                    clearInterval(adjustSpawn);
+                    return;
+                }
+                clearInterval(spawnInterval);
+                const newSpawnInterval = setInterval(() => {
+                    if (!gameState.gameRunning) {
+                        clearInterval(newSpawnInterval);
+                        return;
+                    }
+                    createBalloon();
+                }, gameState.spawnRate);
+            }, 5000);
+        }
+
+        function endGame() {
+            gameState.gameRunning = false;
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('gameOver').style.display = 'flex';
+            
+            // Remove todas as bexigas
+            gameState.balloons.forEach(balloon => {
+                const element = document.getElementById(`balloon-${balloon.id}`);
+                if (element) element.remove();
+            });
+            gameState.balloons = [];
+        }
+
+        function restartGame() {
+            document.getElementById('gameOver').style.display = 'none';
+            startGame();
+        }
+
+        // Previne scroll em dispositivos móveis
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ceab62918fa538',t:'MTc2MDE4ODk3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
