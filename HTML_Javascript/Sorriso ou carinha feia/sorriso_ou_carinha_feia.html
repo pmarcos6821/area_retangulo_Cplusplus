@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se aparecer sorriso ganha pontos, senão perde tudo</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: 4px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .circle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+        }
+
+        .circle.clicked {
+            cursor: default;
+            transform: scale(0.95);
+        }
+
+        .circle.happy {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .circle.sad {
+            background: linear-gradient(45deg, #ff4757, #c44569);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .game-over-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .game-over h2 {
+            color: #ff4757;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+            
+            .circle {
+                width: 90px;
+                height: 90px;
+                font-size: 2.5rem;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-area {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .circle {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <h1 class="game-title">🎯 Jogo dos Sorrisos</h1>
+        <div class="score-display">
+            Pontuação: <span id="score">0</span>
+        </div>
+    </div>
+
+    <div class="game-area" id="gameArea">
+        <!-- Círculos serão gerados aqui -->
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" onclick="startNewGame()">🎮 Novo Jogo</button>
+        <button class="btn btn-primary" onclick="resetGame()">🔄 Reiniciar</button>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <div class="game-over-content">
+            <h2>😱 Game Over!</h2>
+            <p class="final-score">Você encontrou a carinha feia!</p>
+            <p class="final-score">Pontuação Final: <span id="finalScore">0</span></p>
+            <button class="btn btn-primary" onclick="startNewGame()">🎮 Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let gameActive = false;
+        let circles = [];
+        let sadCircleIndex = -1;
+
+        function createCircles() {
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = '';
+            circles = [];
+            
+            // Criar 12 círculos
+            for (let i = 0; i < 12; i++) {
+                const circle = document.createElement('div');
+                circle.className = 'circle';
+                circle.onclick = () => clickCircle(i);
+                gameArea.appendChild(circle);
+                circles.push(circle);
+            }
+            
+            // Escolher aleatoriamente qual círculo terá a carinha feia
+            sadCircleIndex = Math.floor(Math.random() * 12);
+        }
+
+        function clickCircle(index) {
+            if (!gameActive || circles[index].classList.contains('clicked')) {
+                return;
+            }
+
+            const circle = circles[index];
+            circle.classList.add('clicked');
+
+            if (index === sadCircleIndex) {
+                // Carinha feia - fim de jogo
+                circle.innerHTML = '😵';
+                circle.classList.add('sad');
+                endGame();
+            } else {
+                // Sorriso - ganhar ponto
+                circle.innerHTML = '😊';
+                circle.classList.add('happy');
+                score++;
+                updateScore();
+                
+                // Verificar se todos os sorrisos foram revelados
+                const clickedHappy = circles.filter(c => 
+                    c.classList.contains('clicked') && c.classList.contains('happy')
+                ).length;
+                
+                if (clickedHappy === 11) {
+                    // Vitória! Todos os sorrisos foram encontrados
+                    setTimeout(() => {
+                        alert('🎉 Parabéns! Você encontrou todos os sorrisos e evitou a carinha feia!');
+                        startNewGame();
+                    }, 500);
+                }
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('finalScore').textContent = score;
+            
+            setTimeout(() => {
+                document.getElementById('gameOver').style.display = 'flex';
+            }, 1000);
+        }
+
+        function startNewGame() {
+            score = 0;
+            gameActive = true;
+            updateScore();
+            createCircles();
+            document.getElementById('gameOver').style.display = 'none';
+        }
+
+        function resetGame() {
+            startNewGame();
+        }
+
+        // Iniciar o jogo quando a página carregar
+        window.onload = function() {
+            startNewGame();
+        };
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98d063a365ec00f5',t:'MTc2MDIwNzAxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
