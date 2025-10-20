@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projetos\\Python\\Progress\u00E3o geom\u00E9trica\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D8876B68-4554-444C-ACFE-E9A56FCDFEF7}|Progress\u00E3o geom\u00E9trica.pyproj|D:\\Projetos\\Python\\Progress\u00E3o geom\u00E9trica\\Progress\u00E3o_geom\u00E9trica.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{D8876B68-4554-444C-ACFE-E9A56FCDFEF7}|Progress\u00E3o geom\u00E9trica.pyproj|solutionrelative:Progress\u00E3o_geom\u00E9trica.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Progress\u00E3o_geom\u00E9trica.py",
+              "DocumentMoniker": "D:\\Projetos\\Python\\Progress\u00E3o geom\u00E9trica\\Progress\u00E3o_geom\u00E9trica.py",
+              "RelativeDocumentMoniker": "Progress\u00E3o_geom\u00E9trica.py",
+              "ToolTip": "D:\\Projetos\\Python\\Progress\u00E3o geom\u00E9trica\\Progress\u00E3o_geom\u00E9trica.py",
+              "RelativeToolTip": "Progress\u00E3o_geom\u00E9trica.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-10-17T18:52:14.269Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
