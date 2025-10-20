@@ -1,0 +1,17 @@
+D:\Projetos\C#\Potenciacao_base_expoente\bin\Debug\net9.0-windows\Potenciacao_base_expoente.exe
+D:\Projetos\C#\Potenciacao_base_expoente\bin\Debug\net9.0-windows\Potenciacao_base_expoente.deps.json
+D:\Projetos\C#\Potenciacao_base_expoente\bin\Debug\net9.0-windows\Potenciacao_base_expoente.runtimeconfig.json
+D:\Projetos\C#\Potenciacao_base_expoente\bin\Debug\net9.0-windows\Potenciacao_base_expoente.dll
+D:\Projetos\C#\Potenciacao_base_expoente\bin\Debug\net9.0-windows\Potenciacao_base_expoente.pdb
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.Form1.resources
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.csproj.GenerateResource.cache
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.AssemblyInfoInputs.cache
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.AssemblyInfo.cs
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.csproj.CoreCompileInputs.cache
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.sourcelink.json
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.dll
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\refint\Potenciacao_base_expoente.dll
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.pdb
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\Potenciacao_base_expoente.genruntimeconfig.cache
+D:\Projetos\C#\Potenciacao_base_expoente\obj\Debug\net9.0-windows\ref\Potenciacao_base_expoente.dll
